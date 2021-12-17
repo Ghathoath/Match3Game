@@ -3,11 +3,13 @@ from mainmenu import *
 
 
 pygame.init()
-
-main_menu=MainMenu()
+screen = pygame.display.set_mode((800,600))
+pygame.display.set_caption('三消游戏')
+screen.fill((255, 255, 255))
+main_menu=MainMenu(screen)
 main_menu.run()
 
-
+print('ssc')
 
 
 # # =======================图片教学========================
