@@ -1,13 +1,16 @@
 import pygame
 from mainmenu import *
+from gamemenu import *
 
 
 pygame.init()
 screen = pygame.display.set_mode((800,600))
 pygame.display.set_caption('三消游戏')
 screen.fill((255, 255, 255))
-main_menu=MainMenu(screen)
+main_menu = MainMenu(screen)
 main_menu.run()
+game_menu = GameMenu(screen)
+game_menu.run()
 
 print('ssc')
 
