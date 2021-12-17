@@ -19,17 +19,17 @@ class GameMenu:
 
     def draw_game_menu(self, button_state):
         if button_state['chapter']:
-            chapter_button = pygame.image.load('image/mainmenu_start_pressed.png')
+            chapter_button = pygame.image.load('image/gamemenu_pressed_chapter.png')
         else:
-            chapter_button = pygame.image.load('image/mainmenu_start.png')
+            chapter_button = pygame.image.load('image/gamemenu_chapter.png')
         if button_state['skill']:
-            skill_button = pygame.image.load('image/mainmenu_options_pressed.png')
+            skill_button = pygame.image.load('image/gamemenu_pressed_skill.png')
         else:
-            skill_button = pygame.image.load('image/mainmenu_options.png')
+            skill_button = pygame.image.load('image/gamemenu_skill.png')
         if button_state['shop']:
-            shop_button = pygame.image.load('image/mainmenu_exit_pressed.png')
+            shop_button = pygame.image.load('image/gamemenu_pressed_shop.png')
         else:
-            shop_button = pygame.image.load('image/mainmenu_exit.png')
+            shop_button = pygame.image.load('image/gamemenu_shop.png')
         character_info = pygame.image.load('image/character_info.png')
 
         self.screen.blit(chapter_button, (self.BUTTON_X_ALL, self.BUTTON_Y_CHAPTER + button_state['chapter'] * 6))
