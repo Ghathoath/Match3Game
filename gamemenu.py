@@ -1,5 +1,6 @@
 import pygame
 from enum import Enum
+from game import *
 
 
 class GameMenu:
@@ -16,6 +17,7 @@ class GameMenu:
 
     def __init__(self, screen):
         self.screen = screen
+        self.game = Game(screen)
 
     def draw_game_menu(self, button_state):
         if button_state['chapter']:
@@ -74,6 +76,8 @@ class GameMenu:
                 if event.type == pygame.MOUSEBUTTONUP:
                     if button_state['chapter'] == 1:
                         button_state['chapter'] = 0
+                        gamemenuloop = False
+                        break
                     if button_state['skill'] == 1:
                         button_state['skill'] = 0
                     if button_state['shop'] == 1:
@@ -84,7 +88,7 @@ class GameMenu:
             # 渲染主菜单
             self.screen.fill((255, 255, 255))
             self.draw_game_menu(button_state)
-            pygame.display.flip()
+            pygame.display.update()
 
     class ButtonState(Enum):
         normal = 0
