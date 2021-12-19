@@ -12,6 +12,7 @@ class Game:
     FIELD_DROPING = 1
     FIELD_DROPING_STEP = 1
     FIELD_AFTER_SWAP = 1
+    TRY_TO_SWAP = 0
     GAME_LOOP = 1
     FPS = 30
     GLOBAL_TIME = 0
@@ -96,6 +97,7 @@ class Game:
                             self.swap()
                             self.after_swap()
                             self.SWAPPING = 0
+
                     #     if self.SWAPPING == 0:
                     #         self.swap_source = (mx, my)
                     #         self.SWAPPING = 1
@@ -120,11 +122,17 @@ class Game:
         i2 = (self.swap_dest[1] - self.FEILD_Y) // self.CUBE_HEIGHT
         j2 = (self.swap_dest[0] - self.FEILD_X) // self.CUBE_WIDTH
         print('%d,%d and %d,%d', i1, j1, i2, j2)
-        self.swap_list.append((i1, j1))
-        self.swap_list.append((i2, j2))
-        self.SHOW_SWAP = 1
-        self.all_anime()
         self.field[i1][j1], self.field[i2][j2] = self.field[i2][j2], self.field[i1][j1]
+        self.TRY_TO_SWAP = 1
+        self.match()
+        self.field[i1][j1], self.field[i2][j2] = self.field[i2][j2], self.field[i1][j1]
+        if self.TRY_TO_SWAP:
+            self.swap_list.append((i1, j1))
+            self.swap_list.append((i2, j2))
+            self.SHOW_SWAP = 1
+            self.all_anime()
+            self.field[i1][j1], self.field[i2][j2] = self.field[i2][j2], self.field[i1][j1]
+            self.TRY_TO_SWAP = 0
 
     def after_swap(self):
         self.FIELD_AFTER_SWAP = 1
@@ -230,9 +238,11 @@ class Game:
                             col_match.append((i, j))
             if len(col_match) >= 3:
                 match_list.extend(col_match)
+        if self.TRY_TO_SWAP == 0:
+            self.match_logical_anime(match_list)
         if len(match_list) == 0:
             self.FIELD_AFTER_SWAP = 0
-        self.match_logical_anime(match_list)
+            self.TRY_TO_SWAP = 0
 
     def match_logical_anime(self, match_list_all):
         for tuple in match_list_all:
