@@ -17,6 +17,9 @@ class Game:
     GLOBAL_TIME = 0
     DELTA = 0
     SWAPPING = 0
+    SHOW_SWAP = 0
+    SWAP_SPEED = 4
+    DROP_SPEED = 11
 
     def __init__(self, screen):
         test = 1
@@ -37,12 +40,15 @@ class Game:
                          4: self.cube_mp}
         self.swap_source = (0, 0)
         self.swap_dest = (0, 0)
+        self.drop_list = []
+        self.swap_list = []
+        self.distance = 0
 
     def init_field(self):
         while self.FIELD_DROPING:
-            self.draw()
             self.generate()
             self.gravity()
+            self.draw()
         self.after_swap()
 
     def run(self):
@@ -54,8 +60,8 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mx, my = pygame.mouse.get_pos()
                     print('mouse click on %f,%f', mx, my)
-                    if (mx >= self.FEILD_X and mx <= self.FEILD_X + 8 * self.CUBE_WIDTH and
-                            my >= self.FEILD_Y and my <= self.FEILD_Y + 8 * self.CUBE_HEIGHT):
+                    if (self.FEILD_X <= mx <= self.FEILD_X + 8 * self.CUBE_WIDTH and
+                            self.FEILD_Y <= my <= self.FEILD_Y + 8 * self.CUBE_HEIGHT):
                         if self.SWAPPING == 0:
                             self.swap_source = (mx, my)
                             self.SWAPPING = 1
@@ -71,10 +77,8 @@ class Game:
                         print('cancel swap')
                         self.SWAPPING = 0
 
-
                 if event.type == pygame.QUIT:
                     exit()
-
 
     def swap(self):
         i1 = (self.swap_source[1] - self.FEILD_Y) // self.CUBE_HEIGHT
@@ -82,19 +86,21 @@ class Game:
         i2 = (self.swap_dest[1] - self.FEILD_Y) // self.CUBE_HEIGHT
         j2 = (self.swap_dest[0] - self.FEILD_X) // self.CUBE_WIDTH
         print('%d,%d and %d,%d', i1, j1, i2, j2)
-        self.swap_anime(i1, j1, i2, j2)
+        self.swap_list.append((i1, j1))
+        self.swap_list.append((i2, j2))
+        self.SHOW_SWAP = 1
+        self.all_anime()
         self.field[i1][j1], self.field[i2][j2] = self.field[i2][j2], self.field[i1][j1]
 
     def after_swap(self):
         self.FIELD_AFTER_SWAP = 1
         while self.FIELD_AFTER_SWAP:
-            self.draw()
             self.FIELD_DROPING = 1
             while self.FIELD_DROPING:
                 self.generate()
                 self.gravity()
+            self.draw()
             self.match()
-
 
     def generate(self):
         for i in range(len(self.field[0])):
@@ -104,64 +110,47 @@ class Game:
 
     # gravity:遍历棋盘，若元素下方为空，将该元素加入下移列表，调用drop_anime播放下坠动画
     def gravity(self):
-        drop_list = []
         for i in [6, 5, 4, 3, 2, 1, 0]:  # 从倒数第二行开始
             for j in [0, 1, 2, 3, 4, 5, 6, 7]:
                 if self.field[i + 1][j] == self.Cube_Type.EMPTY and self.field[i][j] != self.Cube_Type.EMPTY:
-                    drop_list.append((i, j))
-        if len(drop_list) == 0:
+                    self.drop_list.append((i, j))
+        if len(self.drop_list) == 0:
             self.FIELD_DROPING = 0
         else:
             self.FIELD_DROPING_STEP = 1
-            self.drop_anime(drop_list)
-            for i, j in drop_list:
+            self.all_anime()
+            for i, j in self.drop_list:
                 self.field[i][j], self.field[i + 1][j] = self.field[i + 1][j], self.field[i][j]
+            self.drop_list.clear()
 
     # drop:将下移列表的中的元素全部下移
-    def drop_anime(self, drop_list):
+    def drop_anime(self):
         start_time = self.GLOBAL_TIME
-        drop_speed = 4
-        distance = 0
-        while self.FIELD_DROPING_STEP:
-            self.clock_tick()
-            distance += drop_speed
-            # 将动画部分涂透明
-            for i, j in drop_list:
-                cube = pygame.image.load('image/background_cube.png')
-                self.screen.blit(cube, (self.FEILD_X + j * self.CUBE_WIDTH, self.FEILD_Y + i * self.CUBE_HEIGHT))
-                self.screen.blit(cube, (self.FEILD_X + j * self.CUBE_WIDTH, self.FEILD_Y + (i + 1) * self.CUBE_HEIGHT))
-            pygame.display.update()
-            # 重画动画部分
-            for i, j in drop_list:
-                cube = self.cube_map[self.field[i][j]]
-                self.screen.blit(cube,
-                                 (self.FEILD_X + j * self.CUBE_WIDTH, self.FEILD_Y + i * self.CUBE_HEIGHT + distance))
-            pygame.display.update()
-            if distance >= self.CUBE_HEIGHT:
-                self.FIELD_DROPING_STEP = 0
+        self.clock_tick()
+        self.distance += self.DROP_SPEED
+        # 绘制动画中的方块
+        for i, j in self.drop_list:
+            cube = self.cube_map[self.field[i][j]]
+            self.screen.blit(cube,
+                             (self.FEILD_X + j * self.CUBE_WIDTH, self.FEILD_Y + i * self.CUBE_HEIGHT + self.distance))
+        if self.distance >= self.CUBE_HEIGHT:
+            self.FIELD_DROPING_STEP = 0
+            self.distance = 0
 
     def swap_anime(self, i1, j1, i2, j2):
-        swap_speed = 2
-        distance = 0
-        swaploop = 1
-        while swaploop:
-            self.clock_tick()
-            distance += swap_speed
-            # 将动画部分涂透明
-            cube = pygame.image.load('image/background_cube.png')
-            self.screen.blit(cube, (self.FEILD_X + j1 * self.CUBE_WIDTH, self.FEILD_Y + i1 * self.CUBE_HEIGHT))
-            self.screen.blit(cube, (self.FEILD_X + j2 * self.CUBE_WIDTH, self.FEILD_Y + i2 * self.CUBE_HEIGHT))
-            pygame.display.update()
-            # 重画动画部分
-            cube1 = self.cube_map[self.field[i1][j1]]
-            cube2 = self.cube_map[self.field[i2][j2]]
-            self.screen.blit(cube2, (self.FEILD_X + j2 * self.CUBE_WIDTH + (j1 - j2) * distance
-                                     , self.FEILD_Y + i2 * self.CUBE_HEIGHT + (i1 - i2) * distance))
-            self.screen.blit(cube1, (self.FEILD_X + j1 * self.CUBE_WIDTH + (j2 - j1) * distance
-                                     , self.FEILD_Y + i1 * self.CUBE_HEIGHT + (i2 - i1) * distance))
-            pygame.display.update()
-            if distance >= self.CUBE_HEIGHT:
-                swaploop = 0
+        self.clock_tick()
+        self.distance += self.SWAP_SPEED
+        # 绘制动画中的方块
+        cube1 = self.cube_map[self.field[i1][j1]]
+        cube2 = self.cube_map[self.field[i2][j2]]
+        self.screen.blit(cube2, (self.FEILD_X + j2 * self.CUBE_WIDTH + (j1 - j2) * self.distance
+                                 , self.FEILD_Y + i2 * self.CUBE_HEIGHT + (i1 - i2) * self.distance))
+        self.screen.blit(cube1, (self.FEILD_X + j1 * self.CUBE_WIDTH + (j2 - j1) * self.distance
+                                 , self.FEILD_Y + i1 * self.CUBE_HEIGHT + (i2 - i1) * self.distance))
+        if self.distance >= self.CUBE_HEIGHT:
+            self.SHOW_SWAP = 0
+            self.swap_list.clear()
+            self.distance = 0
 
     def match(self):
         match_list = []
@@ -204,27 +193,40 @@ class Game:
                             col_match.clear()
                         else:
                             col_match.clear()
-                            col_match.append((i,j))
+                            col_match.append((i, j))
             if len(col_match) >= 3:
                 match_list.extend(col_match)
-        if len(match_list)==0:
+        if len(match_list) == 0:
             self.FIELD_AFTER_SWAP = 0
         self.match_logical_anime(match_list)
 
-    def match_logical_anime(self,match_list_all):
+    def match_logical_anime(self, match_list_all):
         for tuple in match_list_all:
-            i,j = tuple[0],tuple[1]
-            self.field[i][j]=0
+            i, j = tuple[0], tuple[1]
+            self.field[i][j] = 0
         self.draw()
+
+    def all_anime(self):
+        while self.FIELD_DROPING_STEP:
+            self.draw()
+        while self.SHOW_SWAP:
+            self.draw()
 
     # draw:画图
     def draw(self):
         self.draw_background()
         for i in [1, 2, 3, 4, 5, 6, 7]:
             for j in [0, 1, 2, 3, 4, 5, 6, 7]:
-                cube = self.cube_map[self.field[i][j]]
-                self.screen.blit(cube, (self.FEILD_X + j * self.CUBE_WIDTH, self.FEILD_Y + i * self.CUBE_HEIGHT))
-        pygame.display.update()
+                if (i, j) not in self.drop_list:
+                    if (i, j) not in self.swap_list:
+                        cube = self.cube_map[self.field[i][j]]
+                        self.screen.blit(cube,
+                                         (self.FEILD_X + j * self.CUBE_WIDTH, self.FEILD_Y + i * self.CUBE_HEIGHT))
+        if self.FIELD_DROPING_STEP:
+            self.drop_anime()
+        if self.SHOW_SWAP:
+            self.swap_anime(self.swap_list[0][0], self.swap_list[0][1], self.swap_list[1][0], self.swap_list[1][1])
+        pygame.display.flip()
 
     def draw_background(self):
         self.screen.fill((255, 255, 255))
