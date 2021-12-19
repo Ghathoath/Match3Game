@@ -61,21 +61,55 @@ class Game:
                     mx, my = pygame.mouse.get_pos()
                     print('mouse click on %f,%f', mx, my)
                     if (self.FEILD_X <= mx <= self.FEILD_X + 8 * self.CUBE_WIDTH and
-                            self.FEILD_Y <= my <= self.FEILD_Y + 8 * self.CUBE_HEIGHT):
-                        if self.SWAPPING == 0:
-                            self.swap_source = (mx, my)
-                            self.SWAPPING = 1
-                            print('click another')
-                        elif self.SWAPPING == 1:
-                            if True:
-                                print('swaping')
-                                self.swap_dest = (mx, my)
-                                self.swap()
-                                self.after_swap()
+                            self.FEILD_Y + self.CUBE_HEIGHT <= my <= self.FEILD_Y + 8 * self.CUBE_HEIGHT):
+                        self.swap_source = (mx, my)
+                        self.SWAPPING = 1
+                if self.SWAPPING == 1:
+                    if event.type == pygame.MOUSEMOTION:
+                        mx, my = pygame.mouse.get_pos()
+                        changeable = 0
+                        if mx - self.swap_source[0] >= self.CUBE_WIDTH:
+                            if mx < self.FEILD_X + 8 * self.CUBE_WIDTH:
+                                self.swap_dest = (self.swap_source[0] + self.CUBE_WIDTH, self.swap_source[1])
+                                changeable = 1
+                            else:
                                 self.SWAPPING = 0
-                    else:
-                        print('cancel swap')
-                        self.SWAPPING = 0
+                        if self.swap_source[0] - mx >= self.CUBE_WIDTH:
+                            if mx > self.FEILD_X:
+                                self.swap_dest = (self.swap_source[0] - self.CUBE_WIDTH, self.swap_source[1])
+                                changeable = 1
+                            else:
+                                self.SWAPPING = 0
+                        if my - self.swap_source[1] >= self.CUBE_HEIGHT:
+                            if my < self.FEILD_Y + 8 * self.CUBE_HEIGHT:
+                                self.swap_dest = (self.swap_source[0], self.swap_source[1] + self.CUBE_HEIGHT)
+                                changeable = 1
+                            else:
+                                self.SWAPPING = 0
+                        if self.swap_source[1] - my >= self.CUBE_HEIGHT:
+                            if my > self.FEILD_Y + self.CUBE_HEIGHT:
+                                self.swap_dest = (self.swap_source[0], self.swap_source[1] - self.CUBE_HEIGHT)
+                                changeable = 1
+                            else:
+                                self.SWAPPING = 0
+                        if changeable:
+                            self.swap()
+                            self.after_swap()
+                            self.SWAPPING = 0
+                    #     if self.SWAPPING == 0:
+                    #         self.swap_source = (mx, my)
+                    #         self.SWAPPING = 1
+                    #         print('click another')
+                    #     elif self.SWAPPING == 1:
+                    #         if True:
+                    #             print('swaping')
+                    #             self.swap_dest = (mx, my)
+                    #             self.swap()
+                    #             self.after_swap()
+                    #             self.SWAPPING = 0
+                    # else:
+                    #     print('cancel swap')
+                    #     self.SWAPPING = 0
 
                 if event.type == pygame.QUIT:
                     exit()
