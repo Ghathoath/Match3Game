@@ -17,7 +17,6 @@ class GameMenu:
 
     def __init__(self, screen):
         self.screen = screen
-        self.game = Game(screen)
 
     def draw_game_menu(self, button_state):
         if button_state['chapter']:

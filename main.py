@@ -11,7 +11,7 @@ main_menu = MainMenu(screen)
 main_menu.run()
 game_menu = GameMenu(screen)
 game_menu.run()
-game = Game(screen)
+game = Game(screen,'erzerge')
 game.run()
 
 print('ssc')
