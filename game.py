@@ -3,11 +3,12 @@ import random
 import math
 from enum import IntEnum
 from enemy import *
+from player import *
 
 
 class Game:
-    FEILD_X = 100  # 452
-    FEILD_Y = 60  # 368
+    FEILD_X = 60  # 412
+    FEILD_Y = 40  # 348
     CUBE_WIDTH = 44
     CUBE_HEIGHT = 44
     FIELD_DROPING = 1
@@ -23,11 +24,10 @@ class Game:
     SWAP_SPEED = 4
     DROP_SPEED = 11
 
-    def __init__(self, screen ,enemy_type):
-
+    def __init__(self, screen ,enemy_type , player_type):
         self.screen = screen
         # 棋盘，8*8规格，最上方行不显示，实际棋盘为7*8。全部初始化为EMPTY类型(0)
-        # self.field = [[self.Cube_Type.EMPTY for y in range(8)] for x in range(8)]
+        # self.field = [[self.CubeType.EMPTY for y in range(8)] for x in range(8)]
         self.field = [[0 for y in range(8)] for x in range(8)]
         self.clock = pygame.time.Clock()
         self.cube_empty = pygame.image.load('image/background_cube.png')
@@ -46,6 +46,7 @@ class Game:
         self.swap_list = []
         self.distance = 0
         self.enemy = Enemy(enemy_type)
+        self.player = Player(player_type)
 
     def init_field(self):
         while self.FIELD_DROPING:
@@ -114,7 +115,6 @@ class Game:
                 #             self.after_swap()
                 #             self.SWAPPING = 0
 
-
                 if event.type == pygame.QUIT:
                     exit()
 
@@ -145,20 +145,21 @@ class Game:
             self.draw()
             self.match()
 
-        row_damage,damage_type = self.enemy.move(self.field)
-        print('%d,%d',row_damage,damage_type)
+        row_damage= self.enemy.move(self.field)
+        self.player.get_damage(row_damage)
+        print('damgage:',row_damage)
 
     def generate(self):
         for i in range(len(self.field[0])):
             # 也可使用random库choices函数，若棋盘第一行有元素为空，则随机为1~4
-            if self.field[0][i] == self.Cube_Type.EMPTY:
+            if self.field[0][i] == self.CubeType.EMPTY:
                 self.field[0][i] = random.randint(1, 4)
 
     # gravity:遍历棋盘，若元素下方为空，将该元素加入下移列表，调用drop_anime播放下坠动画
     def gravity(self):
         for i in [6, 5, 4, 3, 2, 1, 0]:  # 从倒数第二行开始
             for j in [0, 1, 2, 3, 4, 5, 6, 7]:
-                if self.field[i + 1][j] == self.Cube_Type.EMPTY and self.field[i][j] != self.Cube_Type.EMPTY:
+                if self.field[i + 1][j] == self.CubeType.EMPTY and self.field[i][j] != self.CubeType.EMPTY:
                     self.drop_list.append((i, j))
         if len(self.drop_list) == 0:
             self.FIELD_DROPING = 0
@@ -200,6 +201,7 @@ class Game:
 
     def match(self):
         match_list = []
+        damage_sum = [0,0]
         # 1.横向匹配
 
         for i in [1, 2, 3, 4, 5, 6, 7]:
@@ -215,6 +217,10 @@ class Game:
                         # 若匹配列表中项数大于3，则将这些元素添加到匹配列表大全，然后清空，否则直接清空
                         if len(row_match) >= 3:
                             match_list.extend(row_match)
+                            level = len(row_match)-2
+                            cube_type = self.field[row_match_last_i][row_match_last_j]
+                            damage,damage_type = self.player.effect(level,cube_type)
+                            damage_sum[damage_type]+=damage
                             row_match.clear()
                         else:
                             row_match.clear()
@@ -236,23 +242,31 @@ class Game:
                         # 若匹配列表中项数大于3，则将这些元素添加到匹配列表大全，然后清空，否则清空再添加自己
                         if len(col_match) >= 3:
                             match_list.extend(col_match)
+                            level = len(col_match) - 2
+                            cube_type = self.field[col_match_last_i][col_match_last_j]
+                            damage, damage_type = self.player.effect(level, cube_type)
+                            damage_sum[damage_type] += damage
                             col_match.clear()
                         else:
                             col_match.clear()
                             col_match.append((i, j))
             if len(col_match) >= 3:
                 match_list.extend(col_match)
+
+        self.enemy.get_damage(damage_sum)
         if self.TRY_TO_SWAP == 0:
             self.match_logical_anime(match_list)
         if len(match_list) == 0:
             self.FIELD_AFTER_SWAP = 0
             self.TRY_TO_SWAP = 0
 
+
     def match_logical_anime(self, match_list_all):
         for tuple in match_list_all:
             i, j = tuple[0], tuple[1]
             self.field[i][j] = 0
         self.draw()
+
 
     def all_anime(self):
         while self.FIELD_DROPING_STEP:
@@ -274,20 +288,38 @@ class Game:
             self.drop_anime()
         if self.SHOW_SWAP:
             self.swap_anime(self.swap_list[0][0], self.swap_list[0][1], self.swap_list[1][0], self.swap_list[1][1])
-        pygame.display.flip()
+        pygame.display.update()
 
     def draw_background(self):
         self.screen.fill((255, 255, 255))
+        # 敌人
         enemy_hp = self.enemy.stat.hp
-        pygame.draw.rect(self.screen, (255, 0, 0), (700-enemy_hp, 20, enemy_hp, 30))
+        pygame.draw.rect(self.screen, (255, 0, 0), (765-enemy_hp, 20, enemy_hp, 30))
+        self.screen.blit(self.enemy.enemy_img,(430,60))
+        # 玩家
+        player_hp,player_mp= self.player.stat.hp,self.player.stat.mp
+        pygame.draw.rect(self.screen, (255, 0, 0), (160, 440, player_hp, 20))
+        pygame.draw.rect(self.screen, (0, 0, 255), (160, 460, player_mp, 20))
+        self.screen.blit(self.player.profile_img, (30, 440))
+        i = 0
+        for skill_index in self.player.stat.skillset:
+            skill = self.player.skill_map[skill_index]
+            self.screen.blit(skill,(160+i*90,500))
+            i+=1
+
+
+
+
+
 
     def clock_tick(self):
         self.clock.tick(self.FPS)
         self.GLOBAL_TIME += self.DELTA / 1000
 
-    class Cube_Type(IntEnum):
+    class CubeType(IntEnum):
         EMPTY = 0
         PHYSICAL_ATTACK = 1
         MAGIC_ATTACK = 2
         HP_POTION = 3
         MP_POTION = 4
+        BLOCKS = 5

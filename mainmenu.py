@@ -85,6 +85,6 @@ class MainMenu:
             self.draw_main_menu(button_state)
             pygame.display.flip()
 
-    class Button_State(Enum):
+    class ButtonState(Enum):
         normal = 0
         pressed = 1
