@@ -25,7 +25,7 @@ class Player:
         self.read_player_stat()
         self.blocks_require = {0: 0,
                                1: 1,
-                               2: 1,
+                               2: 0,
                                3: 1,
                                4: 1}
         self.mp_require = {0: 0,
@@ -102,10 +102,13 @@ class Player:
             return 0, 0
 
     def skill_index(self, field, index):
+        if self.mp_require[self.stat.skillset[index]] > self.stat.mp:
+            return -1
         if self.blocks_require[self.stat.skillset[index]]:
             return self.blocks_require[self.stat.skillset[index]]
         else:
             self.skill_without_block(field, index)
+            return 0
 
     def eliminate_blocks(self, field, index, blocks):
         self.stat.mp -= self.mp_require[self.stat.skillset[index]]
@@ -113,7 +116,24 @@ class Player:
             field[blocks[0][0]][blocks[0][1]] = 0
 
     def skill_without_block(self, field, index):
-        pass
+        self.stat.mp -= self.mp_require[self.stat.skillset[index]]
+        if self.stat.skillset[index] == 2:
+            self.random_exchange(field, 1, 0, 7, 7)
+
+    def random_exchange(self, field, i1, j1, i2, j2):
+        new_field_num = []
+        for i in range(i1, i2 + 1):
+            new_field_num.extend(range(i * 8 + j1, i * 8 + j2 + 1))
+        new_field = random.sample(range(len(new_field_num)), len(new_field_num))
+        change_list = []
+        part_field = []
+        for i in range(len(new_field_num)):
+            # 前面的移动到后面的位置
+            change_tuple = (new_field_num[new_field[i]], new_field_num[i])
+            change_list.append(change_tuple)
+            part_field.append(field[new_field_num[new_field[i]] // 8][new_field_num[new_field[i]] % 8])
+        for i in range(len(part_field)):
+            field[new_field_num[i] // 8][new_field_num[i] % 8] = part_field[i]
 
     class StatPlayer(object):
         def __init__(self):

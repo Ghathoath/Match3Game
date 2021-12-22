@@ -81,7 +81,7 @@ class Game:
                                     self.player.eliminate_blocks(self.field, self.USING_SKILL - 1, self.skill_blocks)
                                     self.USING_SKILL = 0
                                     self.after_swap(1)
-                        if self.SWAPPING == 0:
+                        elif self.SWAPPING == 0:
                             self.swap_source = (mx, my)
                             self.SWAPPING = 1
                             print('click another')
@@ -108,6 +108,8 @@ class Game:
                                 if self.skill_block_num == 0:
                                     self.USING_SKILL = 0
                                     self.after_swap(1)
+                                elif self.skill_block_num == -1:
+                                    self.USING_SKILL = 0
 
                         # self.swap_source = (mx, my)
                         # self.SWAPPING = 1
