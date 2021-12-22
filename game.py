@@ -344,6 +344,7 @@ class Game:
         self.screen.fill((255, 255, 255))
         # 敌人
         enemy_hp = self.enemy.stat.hp
+        pygame.draw.rect(self.screen, (255, 120, 120), (765-self.enemy.stat.max_hp, 20, self.enemy.stat.max_hp, 30))
         pygame.draw.rect(self.screen, (255, 0, 0), (765-enemy_hp, 20, enemy_hp, 30))
         self.screen.blit(self.enemy.enemy_img, (430, 60))
         # 玩家

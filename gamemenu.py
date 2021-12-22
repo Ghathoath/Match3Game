@@ -39,6 +39,14 @@ class GameMenu:
         # self.screen.blit(character_info, (self.INFO_X, self.INFO_Y))
         pygame.display.update()
 
+    def draw_chapter_menu(self, level):
+        back = pygame.image.load('image/chapter_back.png')
+        level1 = pygame.image.load('image/level1.png')
+        self.screen.blit(back, (0, 0))
+        self.screen.blit(level1, (100, 100))
+        pygame.display.update()
+
+
     def run(self):
         if pygame.display.get_init():
             print('True')
@@ -77,8 +85,7 @@ class GameMenu:
                 if event.type == pygame.MOUSEBUTTONUP:
                     if button_state['chapter'] == 1:
                         button_state['chapter'] = 0
-                        gamemenuloop = False
-                        break
+                        self.chapter()
                     if button_state['skill'] == 1:
                         button_state['skill'] = 0
                     if button_state['shop'] == 1:
@@ -90,6 +97,31 @@ class GameMenu:
             self.screen.fill((255, 255, 255))
             self.screen.blit(stand, (380, 0))
             self.draw_game_menu(button_state)
+            pygame.display.update()
+
+    def chapter(self):
+        button_state = 0
+        # 初始化
+        self.screen.fill((255, 255, 255))
+        self.draw_chapter_menu(button_state)
+        pygame.display.update()
+        # 选关主循环
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mx, my = pygame.mouse.get_pos()
+                    if 0 <= mx <= 200 and 0 <= my <= 80:
+                        return
+                    if 100 <= mx <= 700 and 100 <= my <= 200:
+                        button_state = 1
+                if event.type == pygame.QUIT:
+                    exit()
+                if button_state:
+                    game = Game(self.screen, 'erzerge', 'player1')
+                    game.run()
+                    button_state = 0
+            self.screen.fill((255, 255, 255))
+            self.draw_chapter_menu(button_state)
             pygame.display.update()
 
     class ButtonState(Enum):

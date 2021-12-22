@@ -26,6 +26,7 @@ class Enemy:
         self.stat.str = int(file.readline())
         self.stat.wis = int(file.readline())
         self.stat.hp = int(file.readline())
+        self.stat.max_hp = self.stat.hp
         self.stat.armor = int(file.readline())
         self.stat.magic_resist = int(file.readline())
         skillsetstr = file.readline()
@@ -87,5 +88,6 @@ class Enemy:
             self.armor = 1              # 护甲
             self.magic_resist = 1       # 魔抗
             self.skillset = []           # 技能组
+            self.max_hp = 0
 
 
