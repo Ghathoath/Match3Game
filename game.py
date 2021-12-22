@@ -312,13 +312,11 @@ class Game:
             self.FIELD_AFTER_SWAP = 0
             self.TRY_TO_SWAP = 0
 
-
     def match_logical_anime(self, match_list_all):
         for tuple in match_list_all:
             i, j = tuple[0], tuple[1]
             self.field[i][j] = 0
         self.draw()
-
 
     def all_anime(self):
         while self.FIELD_DROPING_STEP:
@@ -359,11 +357,6 @@ class Game:
             self.screen.blit(skill, (self.SKILL_AREA_X+i*90, self.SKILL_AREA_Y))
             i += 1
 
-
-
-
-
-
     def clock_tick(self):
         self.clock.tick(self.FPS)
         self.GLOBAL_TIME += self.DELTA / 1000
@@ -375,3 +368,8 @@ class Game:
         HP_POTION = 3
         MP_POTION = 4
         BLOCKS = 5
+        PHYSICAL_ATTACK_PRO = 6
+        MAGIC_ATTACK_PRO = 7
+        HP_POTION_PRO = 8
+        MP_POTION_PRO = 9
+        ONE = 10

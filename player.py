@@ -26,7 +26,7 @@ class Player:
         self.blocks_require = {0: 0,
                                1: 1,
                                2: 0,
-                               3: 1,
+                               3: 2,
                                4: 1}
         self.mp_require = {0: 0,
                            1: 10,
@@ -114,6 +114,12 @@ class Player:
         self.stat.mp -= self.mp_require[self.stat.skillset[index]]
         if self.stat.skillset[index] == 1:
             field[blocks[0][0]][blocks[0][1]] = 0
+        elif self.stat.skillset[index] == 3:
+            field[blocks[0][0]][blocks[0][1]], field[blocks[1][0]][blocks[1][1]] = (field[blocks[1][0]][blocks[1][1]],
+                                                                                    field[blocks[0][0]][blocks[0][1]])
+        elif self.stat.skillset[index] == 4:
+            if 0 < field[blocks[0][0]][blocks[0][1]] <= 4:
+                field[blocks[0][0]][blocks[0][1]] += 5
 
     def skill_without_block(self, field, index):
         self.stat.mp -= self.mp_require[self.stat.skillset[index]]
