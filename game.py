@@ -11,6 +11,10 @@ class Game:
     FEILD_Y = 40  # 348
     CUBE_WIDTH = 44
     CUBE_HEIGHT = 44
+    SKILL_AREA_X = 160
+    SKILL_AREA_Y = 500
+    SKILL_WIDTH = 60
+    SKILL_HEIGHT = 60
     FIELD_DROPING = 1
     FIELD_DROPING_STEP = 1
     FIELD_AFTER_SWAP = 1
@@ -23,6 +27,7 @@ class Game:
     SHOW_SWAP = 0
     SWAP_SPEED = 4
     DROP_SPEED = 11
+    USING_SKILL = 0
 
     def __init__(self, screen ,enemy_type , player_type):
         self.screen = screen
@@ -45,6 +50,8 @@ class Game:
         self.drop_list = []
         self.swap_list = []
         self.distance = 0
+        self.skill_block_num = 0
+        self.skill_blocks = []
         self.enemy = Enemy(enemy_type)
         self.player = Player(player_type)
 
@@ -65,9 +72,16 @@ class Game:
                     mx, my = pygame.mouse.get_pos()
                     if (self.FEILD_X <= mx <= self.FEILD_X + 8 * self.CUBE_WIDTH and
                             self.FEILD_Y + self.CUBE_HEIGHT <= my <= self.FEILD_Y + 8 * self.CUBE_HEIGHT):
-                        # self.swap_source = (mx, my)
-                        # self.SWAPPING = 1
-                        if self.SWAPPING == 0:
+                        if self.USING_SKILL:
+                            if self.skill_block_num > 0:
+                                i, j = self.pos_to_num(mx, my)
+                                self.skill_blocks.append((i, j))
+                                self.skill_block_num -= 1
+                                if self.skill_block_num == 0:
+                                    self.player.eliminate_blocks(self.field, self.USING_SKILL - 1, self.skill_blocks)
+                                    self.USING_SKILL = 0
+                                    self.after_swap(1)
+                        elif self.SWAPPING == 0:
                             self.swap_source = (mx, my)
                             self.SWAPPING = 1
                             print('click another')
@@ -75,14 +89,30 @@ class Game:
                             if True:
                                 print('swaping')
                                 self.swap_dest = (mx, my)
-                                self.swap()
-                                self.after_swap()
+                                swapnum = self.swap()
+                                self.after_swap(swapnum)
                                 self.SWAPPING = 0
                     else:
                         print('cancel swap')
                         self.SWAPPING = 0
+                        self.USING_SKILL = 0
+                        self.skill_blocks.clear()
+                        self.skill_block_num = 0
+                        if (self.SKILL_AREA_X <= mx <= self.SKILL_AREA_X + 330 and
+                                self.SKILL_AREA_Y <= my <= self.SKILL_AREA_Y + self.SKILL_HEIGHT):
+                            skill_chosen = (mx - self.SKILL_AREA_X) // 90
+                            if (mx - self.SKILL_AREA_X - skill_chosen * 90) <= 60:
+                                print(skill_chosen)
+                                self.USING_SKILL = skill_chosen + 1
+                                self.skill_block_num = self.player.skill_index(self.field, skill_chosen)
+                                if self.skill_block_num == 0:
+                                    self.USING_SKILL = 0
+                                    self.after_swap(1)
+                                elif self.skill_block_num == -1:
+                                    self.USING_SKILL = 0
 
-
+                        # self.swap_source = (mx, my)
+                        # self.SWAPPING = 1
                 # if self.SWAPPING == 1:
                 #     if event.type == pygame.MOUSEMOTION:
                 #         mx, my = pygame.mouse.get_pos()
@@ -119,11 +149,28 @@ class Game:
                 if event.type == pygame.QUIT:
                     exit()
 
+    def pos_to_num(self, mx, my):
+        i = (my - self.FEILD_Y) // self.CUBE_HEIGHT
+        j = (mx - self.FEILD_X) // self.CUBE_WIDTH
+        return i, j
+
     def swap(self):
-        i1 = (self.swap_source[1] - self.FEILD_Y) // self.CUBE_HEIGHT
-        j1 = (self.swap_source[0] - self.FEILD_X) // self.CUBE_WIDTH
-        i2 = (self.swap_dest[1] - self.FEILD_Y) // self.CUBE_HEIGHT
-        j2 = (self.swap_dest[0] - self.FEILD_X) // self.CUBE_WIDTH
+        # i1 = (self.swap_source[1] - self.FEILD_Y) // self.CUBE_HEIGHT
+        # j1 = (self.swap_source[0] - self.FEILD_X) // self.CUBE_WIDTH
+        # i2 = (self.swap_dest[1] - self.FEILD_Y) // self.CUBE_HEIGHT
+        # j2 = (self.swap_dest[0] - self.FEILD_X) // self.CUBE_WIDTH
+        i1, j1 = self.pos_to_num(self.swap_source[0], self.swap_source[1])
+        i2, j2 = self.pos_to_num(self.swap_dest[0], self.swap_dest[1])
+        if i1 == i2:
+            if j1 - j2 != 1:
+                if j2 - j1 != 1:
+                    return 0
+        elif j1 == j2:
+            if i1 - i2 != 1:
+                if i2 - i1 != 1:
+                    return 0
+        else:
+            return 0
         self.field[i1][j1], self.field[i2][j2] = self.field[i2][j2], self.field[i1][j1]
         self.TRY_TO_SWAP = 1
         self.match()
@@ -135,8 +182,11 @@ class Game:
             self.all_anime()
             self.field[i1][j1], self.field[i2][j2] = self.field[i2][j2], self.field[i1][j1]
             self.TRY_TO_SWAP = 0
+            return 1
+        else:
+            return 0
 
-    def after_swap(self):
+    def after_swap(self, mode=0):
         self.FIELD_AFTER_SWAP = 1
         while self.FIELD_AFTER_SWAP:
             self.FIELD_DROPING = 1
@@ -146,9 +196,10 @@ class Game:
             self.draw()
             self.match()
 
-        row_damage= self.enemy.move(self.field)
-        self.player.get_damage(row_damage)
-        print('damgage:',row_damage)
+        if mode:
+            row_damage = self.enemy.move(self.field)
+            self.player.get_damage(row_damage)
+            print('damgage:', row_damage)
 
     def generate(self):
         for i in range(len(self.field[0])):
@@ -202,7 +253,7 @@ class Game:
 
     def match(self):
         match_list = []
-        damage_sum = [0,0]
+        damage_sum = [0, 0]
         # 1.横向匹配
 
         for i in [1, 2, 3, 4, 5, 6, 7]:
@@ -220,8 +271,8 @@ class Game:
                             match_list.extend(row_match)
                             level = len(row_match)-2
                             cube_type = self.field[row_match_last_i][row_match_last_j]
-                            damage,damage_type = self.player.effect(level,cube_type)
-                            damage_sum[damage_type]+=damage
+                            damage, damage_type = self.player.effect(level, cube_type)
+                            damage_sum[damage_type] += damage
                             row_match.clear()
                         else:
                             row_match.clear()
@@ -296,17 +347,17 @@ class Game:
         # 敌人
         enemy_hp = self.enemy.stat.hp
         pygame.draw.rect(self.screen, (255, 0, 0), (765-enemy_hp, 20, enemy_hp, 30))
-        self.screen.blit(self.enemy.enemy_img,(430,60))
+        self.screen.blit(self.enemy.enemy_img, (430, 60))
         # 玩家
-        player_hp,player_mp= self.player.stat.hp,self.player.stat.mp
+        player_hp, player_mp = self.player.stat.hp, self.player.stat.mp
         pygame.draw.rect(self.screen, (255, 0, 0), (160, 440, player_hp, 20))
         pygame.draw.rect(self.screen, (0, 0, 255), (160, 460, player_mp, 20))
         self.screen.blit(self.player.profile_img, (30, 440))
         i = 0
         for skill_index in self.player.stat.skillset:
             skill = self.player.skill_map[skill_index]
-            self.screen.blit(skill,(160+i*90,500))
-            i+=1
+            self.screen.blit(skill, (self.SKILL_AREA_X+i*90, self.SKILL_AREA_Y))
+            i += 1
 
 
 
