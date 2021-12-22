@@ -31,12 +31,12 @@ class GameMenu:
             shop_button = pygame.image.load('image/gamemenu_pressed_shop.png')
         else:
             shop_button = pygame.image.load('image/gamemenu_shop.png')
-        character_info = pygame.image.load('image/character_info.png')
+        # character_info = pygame.image.load('image/character_info.png')
 
         self.screen.blit(chapter_button, (self.BUTTON_X_ALL, self.BUTTON_Y_CHAPTER + button_state['chapter'] * 6))
         self.screen.blit(skill_button, (self.BUTTON_X_ALL, self.BUTTON_Y_SKILL + button_state['skill'] * 6))
         self.screen.blit(shop_button, (self.BUTTON_X_ALL, self.BUTTON_Y_SHOP + button_state['shop'] * 6))
-        self.screen.blit(character_info, (self.INFO_X, self.INFO_Y))
+        # self.screen.blit(character_info, (self.INFO_X, self.INFO_Y))
         pygame.display.update()
 
     def run(self):
@@ -46,6 +46,8 @@ class GameMenu:
         button_state = {'chapter': 0, 'skill': 0, 'shop': 0}
         # 渲染主菜单
         self.screen.fill((255, 255, 255))
+        stand = pygame.image.load('image/gamemenu_stand.jpg')
+        self.screen.blit(stand,(430,0))
         pygame.display.flip()
         self.draw_game_menu(button_state)
 
@@ -86,6 +88,7 @@ class GameMenu:
 
             # 渲染主菜单
             self.screen.fill((255, 255, 255))
+            self.screen.blit(stand, (380, 0))
             self.draw_game_menu(button_state)
             pygame.display.update()
 

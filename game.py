@@ -65,6 +65,8 @@ class Game:
                     mx, my = pygame.mouse.get_pos()
                     if (self.FEILD_X <= mx <= self.FEILD_X + 8 * self.CUBE_WIDTH and
                             self.FEILD_Y + self.CUBE_HEIGHT <= my <= self.FEILD_Y + 8 * self.CUBE_HEIGHT):
+                        # self.swap_source = (mx, my)
+                        # self.SWAPPING = 1
                         if self.SWAPPING == 0:
                             self.swap_source = (mx, my)
                             self.SWAPPING = 1
@@ -80,8 +82,7 @@ class Game:
                         print('cancel swap')
                         self.SWAPPING = 0
 
-                        # self.swap_source = (mx, my)
-                        # self.SWAPPING = 1
+
                 # if self.SWAPPING == 1:
                 #     if event.type == pygame.MOUSEMOTION:
                 #         mx, my = pygame.mouse.get_pos()

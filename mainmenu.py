@@ -14,8 +14,11 @@ class MainMenu:
 
     def __init__(self, screen):
         self.screen = screen
+        self.bg = pygame.image.load('image/mainmenu_bg.jpg')
+        self.bg_options = pygame.image.load('image/bg_options.png')
 
     def draw_main_menu(self, button_state):
+        self.screen.blit(self.bg, (0, 0))
         if button_state['start']:
             start_button = pygame.image.load('image/mainmenu_start_pressed.png')
         else:
@@ -41,6 +44,7 @@ class MainMenu:
         button_state = {'start': 0, 'options': 0, 'exit': 0}
         # 渲染主菜单
         self.screen.fill((255, 255, 255))
+        self.screen.blit(self.bg,(0,0))
         pygame.display.flip()
         self.draw_main_menu(button_state)
 
@@ -74,6 +78,7 @@ class MainMenu:
                         break
                     if button_state['options'] == 1:
                         button_state['options'] = 0
+                        self.options_menu()
                     if button_state['exit'] == 1:
                         button_state['exit'] = 0
                         exit()
@@ -84,6 +89,25 @@ class MainMenu:
             self.screen.fill((255, 255, 255))
             self.draw_main_menu(button_state)
             pygame.display.flip()
+
+    def options_menu(self):
+        print('options start')
+        options_loop = 1
+        while options_loop:
+            self.screen.blit(self.bg_options,(0,0))
+            pygame.display.update()
+            click_on_yes = 0
+            for event in pygame.event.get():
+                if click_on_yes:
+                    print('启用音效')
+                if event.type == pygame.MOUSEBUTTONUP:
+                    print('mouse up')
+                    mx,my = pygame.mouse.get_pos()
+                    if mx < 300 and my > 500:
+                        print('回到主菜单')
+                        options_loop = 0
+                        break
+
 
     class ButtonState(Enum):
         normal = 0
