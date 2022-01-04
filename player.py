@@ -60,7 +60,9 @@ class Player:
             self.stat.learned_skill.append(int(skill))
         self.MAX_HP = self.stat.hp
         self.MAX_MP = self.stat.mp
+        self.stat.exp = int(file.readline())
         file.close()
+
 
     def move(self, field, index):
         self.RAW_DAMAGE = 0
@@ -152,3 +154,4 @@ class Player:
             self.magic_resist = 1  # 魔抗
             self.skillset = []  # 技能组
             self.learned_skill = []  # 习得技能
+            self.exp = 0 # 经验值

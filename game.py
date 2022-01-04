@@ -40,6 +40,8 @@ class Game:
         self.cube_magatk = pygame.image.load('image/magic_attack.png')
         self.cube_hp = pygame.image.load('image/hp_potion.png')
         self.cube_mp = pygame.image.load('image/mp_potion.png')
+        self.bg_win = pygame.image.load('image/bg_win.png')
+        self.bg_win.set_alpha(12)
         self.cube_map = {0: self.cube_empty,
                          1: self.cube_phyatk,
                          2: self.cube_magatk,
@@ -67,6 +69,9 @@ class Game:
             print('True')
         self.init_field()
         while True:
+            if self.enemy.stat.hp<= 0:
+                self.draw_win()
+                break
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mx, my = pygame.mouse.get_pos()
@@ -148,6 +153,25 @@ class Game:
 
                 if event.type == pygame.QUIT:
                     exit()
+
+    def draw_win(self):
+        print('win')
+        win_loop = 1
+        while win_loop:
+
+            self.screen.blit(self.bg_win,(0,0))
+            font1 = pygame.font.Font('font/font.ttf', 60)
+            get_exp = font1.render('GET EXP 300', True, (0, 0, 0))
+            self.screen.blit(get_exp,(200,300))
+            self.player.stat.exp+=300
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONUP:
+                    mx, my = pygame.mouse.get_pos()
+                    if mx < 250 and my > 400:
+                        print('回到游戏菜单')
+                        win_loop = 0
+                        break
 
     def pos_to_num(self, mx, my):
         i = (my - self.FEILD_Y) // self.CUBE_HEIGHT
